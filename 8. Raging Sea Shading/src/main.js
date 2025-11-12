@@ -4,11 +4,16 @@ import GUI from 'lil-gui'
 import waterVertexShader from './shaders/water/vertex.glsl?raw'
 import waterFragmentShader from './shaders/water/fragment.glsl?raw'
 
+import perlinClassic3D from './shaders/includes/perlinClassic3D.glsl?raw' 
+
+import directionalLight from './shaders/includes/directionalLight.glsl?raw'
+
 /**
  * Base
  */
 // Debug
 const gui = new GUI({ width: 340 })
+gui.close() // Minimizes the gui ; need to click to show the list
 const debugObject = {}
 
 // Canvas
@@ -32,10 +37,24 @@ debugObject.surfaceColor = '#151c37'
 gui.addColor(debugObject, 'depthColor').onChange(() => { waterMaterial.uniforms.uDepthColor.value.set(debugObject.depthColor) })
 gui.addColor(debugObject, 'surfaceColor').onChange(() => { waterMaterial.uniforms.uSurfaceColor.value.set(debugObject.surfaceColor) })
 
+// Manually adding the shader files
+const processedWaterVertexShader = waterVertexShader
+    .replace(
+        '#include ../includes/perlinClassic3D.glsl',
+        perlinClassic3D
+    )
+const processedWaterFragmentShader = waterFragmentShader
+    .replace(
+        '#include ../includes/directionalLight.glsl',
+        directionalLight
+    )
+
 // Material
 const waterMaterial = new THREE.ShaderMaterial({
-    vertexShader: waterVertexShader,
-    fragmentShader: waterFragmentShader,
+    // vertexShader: waterVertexShader,
+    vertexShader: processedWaterVertexShader,
+    // fragmentShader: waterFragmentShader,
+    fragmentShader: processedWaterFragmentShader,
     uniforms: {
         uTime: { value: 0 },
         
