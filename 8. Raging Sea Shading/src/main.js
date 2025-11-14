@@ -51,6 +51,7 @@ const processedWaterFragmentShader = waterFragmentShader
 
 // Material
 const waterMaterial = new THREE.ShaderMaterial({
+    // wireframe: true,
     // vertexShader: waterVertexShader,
     vertexShader: processedWaterVertexShader,
     // fragmentShader: waterFragmentShader,
