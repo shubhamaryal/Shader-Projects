@@ -7,6 +7,7 @@ import waterFragmentShader from './shaders/water/fragment.glsl?raw'
 import perlinClassic3D from './shaders/includes/perlinClassic3D.glsl?raw' 
 
 import directionalLight from './shaders/includes/directionalLight.glsl?raw'
+import pointLight from './shaders/includes/pointLight.glsl?raw'
 
 /**
  * Base
@@ -22,11 +23,18 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
+// Axes helper 
+// const axesHelper = new THREE.AxesHelper()
+// axesHelper.position.y += 0.25
+// scene.add(axesHelper)
+
 /**
  * Water
  */
 // Geometry
 const waterGeometry = new THREE.PlaneGeometry(2, 2, 512, 512)
+waterGeometry.deleteAttribute('normal')
+waterGeometry.deleteAttribute('uv')
 
 // Colors
 // debugObject.depthColor = '#186691'
@@ -39,15 +47,11 @@ gui.addColor(debugObject, 'surfaceColor').onChange(() => { waterMaterial.uniform
 
 // Manually adding the shader files
 const processedWaterVertexShader = waterVertexShader
-    .replace(
-        '#include ../includes/perlinClassic3D.glsl',
-        perlinClassic3D
-    )
+    .replace('#include ../includes/perlinClassic3D.glsl', perlinClassic3D)
+
 const processedWaterFragmentShader = waterFragmentShader
-    .replace(
-        '#include ../includes/directionalLight.glsl',
-        directionalLight
-    )
+    .replace('#include ../includes/directionalLight.glsl', directionalLight)
+    .replace('#include ../includes/pointLight.glsl', pointLight)
 
 // Material
 const waterMaterial = new THREE.ShaderMaterial({
@@ -136,6 +140,7 @@ controls.enableDamping = true
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
 })
+renderer.toneMapping = THREE.ACESFilmicToneMapping
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
