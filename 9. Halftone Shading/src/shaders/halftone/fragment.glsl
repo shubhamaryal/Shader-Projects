@@ -7,6 +7,29 @@ varying vec3 vPosition;
 #include ../includes/ambientLight.glsl
 #include ../includes/directionalLight.glsl
 
+vec3 halftone(
+    vec3 color,
+    float repetitions,
+    vec3 direction,
+    float low, 
+    float high,
+    vec3 pointColor,
+    vec3 normal
+) {
+    float intensity = dot(normal, direction);
+    intensity = smoothstep(low, high, intensity);
+
+    vec2 uv = gl_FragCoord.xy / uResolution.y;
+    uv *= repetitions;
+    uv = mod(uv, 1.0);
+
+    float point = distance(uv, vec2(0.5));
+    point = 1.0 - step(0.5 * intensity, point);
+
+    // color = mix(color, pointColor, point);
+    return mix(color, pointColor, point);
+}
+
 void main()
 {
     vec3 viewDirection = normalize(vPosition - cameraPosition);
@@ -34,27 +57,47 @@ void main()
 
     // Halftone 
     // float repetitions = 50.0;
-    float repetitions = 10.0;
+    // float repetitions = 50.0;
+    // vec3 direction = vec3(0.0, -1.0, 0.0);
+    // float low = -0.8;
+    // float high = 1.5;
+    // vec3 pointColor = vec3(1.0, 0.0, 0.0);
+    color = halftone(
+        color,
+        50.0,
+        vec3(0.0, -1.0, 0.0),
+        -0.8,
+        1.5,
+        vec3(1.0, 0.0, 0.0),
+        normal
+    );
 
-    // vec2 uv = gl_FragCoord.xy;
-    // vec2 uv = gl_FragCoord.xy / 1000.0;
-    // vec2 uv = gl_FragCoord.xy / uResolution;
-    vec2 uv = gl_FragCoord.xy / uResolution.y;
-    // uv *= 50.0;
-    // uv *= 10.0;
-    uv *= repetitions;
-    uv = mod(uv, 1.0);
+    // float intensity = dot(normal, direction);
+    // intensity = smoothstep(low, high, intensity);
 
-    float point = distance(uv, vec2(0.5));
-    // point = step(0.5, point);
-    point = 1.0 - step(0.5, point);
-    // point = 1.0 - step(0.5 * 0.3, point);
-    // point = step(point, 0.5);
+    // // vec2 uv = gl_FragCoord.xy;
+    // // vec2 uv = gl_FragCoord.xy / 1000.0;
+    // // vec2 uv = gl_FragCoord.xy / uResolution;
+    // vec2 uv = gl_FragCoord.xy / uResolution.y;
+    // // uv *= 50.0;
+    // // uv *= 10.0;
+    // uv *= repetitions;
+    // uv = mod(uv, 1.0);
+
+    // float point = distance(uv, vec2(0.5));
+    // // point = step(0.5, point);
+    // // point = 1.0 - step(0.5, point);
+    // point = 1.0 - step(0.5 * intensity, point);
+    // // point = 1.0 - step(0.5 * 0.3, point);
+    // // point = step(point, 0.5);
+
+    // color = mix(color, pointColor, point);
 
     // Final color
-    // gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, 1.0);
     // gl_FragColor = vec4(uv, 1.0, 1.0);
-    gl_FragColor = vec4(vec3(point), 1.0);
+    // gl_FragColor = vec4(vec3(point), 1.0);
+    // gl_FragColor = vec4(vec3(intensity), 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }
