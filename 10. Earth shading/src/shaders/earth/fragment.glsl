@@ -1,6 +1,7 @@
 uniform sampler2D uDayTexture;
 uniform sampler2D uNightTexture;
 uniform sampler2D uSpecularCloudsTextureuDayTexture;
+uniform vec3 uSunDirection; 
 
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -12,11 +13,19 @@ void main() {
     // vec3 color = vec3(vUv, 1.0);
     vec3 color = vec3(0.0);
 
+    // Sun orientation 
+    // vec3 uSunDirection = vec3(0.0, 0.0, 1.0);
+    float sunOrientation = dot(uSunDirection, normal); // Meaning : dot will check if normal(of the earth) and sun direction are perfectly aligned or not or how much they are aligned 
+    color = vec3(sunOrientation);
+
     // Day / Night color 
+    // float dayMix = sunOrientation;
+    float dayMix = smoothstep(-0.25, 0.5, sunOrientation);
     vec3 dayColor = texture(uDayTexture, vUv).rgb; // Meaning: We pick the color from the texture at the vUv position, it will give vec4 as output but we will only get rgb which is alias of xyz
     vec3 nightColor = texture(uNightTexture, vUv).rgb;
-    color = dayColor;
+    // color = dayColor;
     // color = nightColor;
+    color = mix(nightColor, dayColor, dayMix); // Note: If dayMix is 0 we will get nightColor, and if it is 1 we will get dayColor 
 
     // Final color
     gl_FragColor = vec4(color, 1.0);
