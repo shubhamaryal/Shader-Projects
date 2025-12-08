@@ -18,7 +18,7 @@ void main() {
     // Sun orientation 
     // vec3 uSunDirection = vec3(0.0, 0.0, 1.0);
     float sunOrientation = dot(uSunDirection, normal); 
-    // Meaning : dot will check if normal(of the earth) and sun direction are perfectly aligned or not or how much they are aligned 
+    // Meaning: dot will check if normal(of the earth) and sun direction are perfectly aligned or not or how much they are aligned 
     color = vec3(sunOrientation);
 
     // Day / Night color 
@@ -44,14 +44,21 @@ void main() {
     // Explain: The color denotes the previous texture i.e. the texture of day and night, and vec3(1.0) means white color which is added in the green channel of specularCloudsColor 
 
     // Fresnel 
-    
+    // float fresnel = dot(viewDirection, normal);
+    // Explain: If the normal is going towards the camera then we will get 0 else the values will be interpolated.
+    float fresnel = dot(viewDirection, normal) + 1.0;
+    fresnel = pow(fresnel, 2.0);
+    // color = vec3(fresnel);
 
     // Atmosphere 
     float atmosphereDayMix = smoothstep(-0.5, 1.0, sunOrientation);
     // color = vec3(sunOrientation);
     // color = vec3(atmosphereDayMix);
     vec3 atmosphereColor = mix(uAtmosphereTwilightColor, uAtmosphereDayColor, atmosphereDayMix);
-    color = atmosphereColor;
+    // color = atmosphereColor;
+    // color = mix(color, atmosphereColor, fresnel);
+    color = mix(color, atmosphereColor, fresnel * atmosphereDayMix);
+    // color = vec3(atmosphereDayMix);
 
     // Final color
     gl_FragColor = vec4(color, 1.0);
