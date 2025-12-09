@@ -19,7 +19,7 @@ void main() {
     // vec3 uSunDirection = vec3(0.0, 0.0, 1.0);
     float sunOrientation = dot(uSunDirection, normal); 
     // Meaning: dot will check if normal(of the earth) and sun direction are perfectly aligned or not or how much they are aligned 
-    color = vec3(sunOrientation);
+    // color = vec3(sunOrientation);
 
     // Day / Night color 
     // float dayMix = sunOrientation;
@@ -40,7 +40,7 @@ void main() {
     // float cloudsMix = specularCloudsColor.g;
     float cloudsMix = smoothstep(0.38, 1.0, specularCloudsColor.g);
     cloudsMix *= dayMix;
-    color = mix(color, vec3(1.0), cloudsMix); 
+    color = mix(color, vec3(1.0), cloudsMix);
     // Explain: The color denotes the previous texture i.e. the texture of day and night, and vec3(1.0) means white color which is added in the green channel of specularCloudsColor 
 
     // Fresnel 
@@ -59,6 +59,23 @@ void main() {
     // color = mix(color, atmosphereColor, fresnel);
     color = mix(color, atmosphereColor, fresnel * atmosphereDayMix);
     // color = vec3(atmosphereDayMix);
+
+    // Specular 
+    vec3 reflection = reflect( - uSunDirection, normal);
+    // float specular = dot(reflection, viewDirection);
+    float specular = - dot(reflection, viewDirection);
+    specular = max(specular, 0.0);
+    specular = pow(specular, 32.0);
+    // color = vec3(specular);
+    specular *= specularCloudsColor.r;
+
+    vec3 specularColor = mix(vec3(1.0), atmosphereColor, fresnel);
+    // Explain: Fresnel will provide the atmosphereColor only on the edges. The atmosphereColor is the vlue blue and red color while the fresnel is the light providing on the edges. If the reflection is not on the edges, it will provide white color. 
+    // color = specularColor;
+    // color += specular;
+    color += specular * specularColor;
+
+    // color = vec3(specularCloudsColor.r);
 
     // Final color
     gl_FragColor = vec4(color, 1.0);
