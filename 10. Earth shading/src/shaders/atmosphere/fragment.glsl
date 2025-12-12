@@ -39,7 +39,19 @@ void main() {
     float atmosphereDayMix = smoothstep(-0.5, 1.0, sunOrientation);
     vec3 atmosphereColor = mix(uAtmosphereTwilightColor, uAtmosphereDayColor, atmosphereDayMix);
     // color = mix(color, atmosphereColor, fresnel * atmosphereDayMix);
-    color = mix(color, atmosphereColor, atmosphereDayMix);
+    // color = mix(color, atmosphereColor, atmosphereDayMix);
+    color += atmosphereColor;
+
+    // Alpha 
+    float edgeAlpha = dot(viewDirection, normal);
+    edgeAlpha = smoothstep(0.0, 0.5, edgeAlpha);
+    // color = vec3(edgeAlpha);
+
+    // color = vec3(sunOrientation);
+    float dayAlpha = smoothstep(-0.5, 0.0, sunOrientation);
+    // color = vec3(dayAlpha);
+
+    float alpha = edgeAlpha * dayAlpha;
 
     // // Specular 
     // vec3 reflection = reflect( - uSunDirection, normal);
@@ -52,7 +64,8 @@ void main() {
     // color += specular * specularColor;
 
     // Final color
-    gl_FragColor = vec4(color, 1.0);
+    // gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, alpha);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

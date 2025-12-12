@@ -189,6 +189,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(sizes.pixelRatio)
 renderer.setClearColor('#000011')
+// renderer.setClearColor('#333333')
 // console.log(renderer.capabilities.getMaxAnisotropy())
 
 /**
