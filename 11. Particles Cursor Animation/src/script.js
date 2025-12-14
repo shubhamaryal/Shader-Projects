@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import particlesVertexShader from './shaders/particles/vertex.glsl'
 import particlesFragmentShader from './shaders/particles/fragment.glsl'
+import particlesVertexTestShader from './shaders/particles/vertexTest.glsl'
+import particlesFragmentTestShader from './shaders/particles/fragmentTest.glsl'
 
 /**
  * Base
@@ -69,18 +71,30 @@ renderer.setPixelRatio(sizes.pixelRatio)
 /**
  * Particles
  */
-const particlesGeometry = new THREE.PlaneGeometry(10, 10, 32, 32)
+// const particlesGeometry = new THREE.PlaneGeometry(10, 10, 32, 32)
+const particlesGeometry = new THREE.PlaneGeometry(10, 10, 128, 128)
 
 const particlesMaterial = new THREE.ShaderMaterial({
     vertexShader: particlesVertexShader,
     fragmentShader: particlesFragmentShader,
-    uniforms:
-    {
+    uniforms: {
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
+        uPictureTexture: new THREE.Uniform(textureLoader.load('./picture-2.png'))
     }
 })
 const particles = new THREE.Points(particlesGeometry, particlesMaterial)
 scene.add(particles)
+// const particlesMaterial = new THREE.ShaderMaterial({
+//     vertexShader: particlesVertexTestShader,
+//     fragmentShader: particlesFragmentTestShader,
+//     uniforms: {
+//         // uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
+//         // uPictureTexture: new THREE.Uniform(textureLoader.load('./picture-2.png'))
+//     }
+// })
+// // const particles = new THREE.Mesh(particlesGeometry, particlesMaterial)
+// const particles = new THREE.Points(particlesGeometry, particlesMaterial)
+// scene.add(particles)
 
 /**
  * Animate
