@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import particlesVertexShader from './shaders/particles/vertex.glsl'
 import particlesFragmentShader from './shaders/particles/fragment.glsl'
+
 import particlesVertexTestShader from './shaders/particles/vertexTest.glsl'
 import particlesFragmentTestShader from './shaders/particles/fragmentTest.glsl'
 
@@ -26,8 +27,7 @@ const sizes = {
     pixelRatio: Math.min(window.devicePixelRatio, 2)
 }
 
-window.addEventListener('resize', () =>
-{
+window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
@@ -69,6 +69,24 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(sizes.pixelRatio)
 
 /**
+ * Displacement
+ */
+const displacement = {}
+
+// 2d canvas
+displacement.canvas = document.createElement('canvas')
+displacement.canvas.width = 128
+displacement.canvas.height = 128
+displacement.canvas.style.position = 'fixed'
+displacement.canvas.style.width = '512px' 
+displacement.canvas.style.height = '512px'
+// Note: The height and width will change the size but not the actual amount of pixels of canvas, we are strecting the canvas so that we can see it properly, we are not increasing the pixels 
+displacement.canvas.style.top = 0
+displacement.canvas.style.left = 0
+displacement.canvas.style.zIndex = 10
+document.body.append(displacement.canvas)
+
+/**
  * Particles
  */
 // const particlesGeometry = new THREE.PlaneGeometry(10, 10, 32, 32)
@@ -79,11 +97,12 @@ const particlesMaterial = new THREE.ShaderMaterial({
     fragmentShader: particlesFragmentShader,
     uniforms: {
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
-        uPictureTexture: new THREE.Uniform(textureLoader.load('./picture-2.png'))
+        uPictureTexture: new THREE.Uniform(textureLoader.load('./picture-1.png'))
     }
 })
 const particles = new THREE.Points(particlesGeometry, particlesMaterial)
 scene.add(particles)
+
 // const particlesMaterial = new THREE.ShaderMaterial({
 //     vertexShader: particlesVertexTestShader,
 //     fragmentShader: particlesFragmentTestShader,
@@ -95,12 +114,11 @@ scene.add(particles)
 // // const particles = new THREE.Mesh(particlesGeometry, particlesMaterial)
 // const particles = new THREE.Points(particlesGeometry, particlesMaterial)
 // scene.add(particles)
-
+ 
 /**
  * Animate
  */
-const tick = () =>
-{
+const tick = () => {
     // Update controls
     controls.update()
 
