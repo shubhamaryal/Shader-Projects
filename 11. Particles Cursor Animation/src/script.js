@@ -86,6 +86,20 @@ displacement.canvas.style.left = 0
 displacement.canvas.style.zIndex = 10
 document.body.append(displacement.canvas)
 
+// Context 
+displacement.context = displacement.canvas.getContext('2d')
+// displacement.context.fillStyle = 'red'
+displacement.context.fillRect(0, 0, displacement.canvas.width, displacement.canvas.height)
+// displacement.context.fillRect(20, 20, 60, 60)
+
+// Glow image
+displacement.glowImage = new Image()
+displacement.glowImage.src = './glow.png'
+// displacement.context.drawImage(displacement.glowImage, 20, 20, 32, 32)
+// window.setTimeout(() => {
+//     displacement.context.drawImage(displacement.glowImage, 20, 20, 32, 32)
+// }, 1000)
+
 /**
  * Particles
  */
