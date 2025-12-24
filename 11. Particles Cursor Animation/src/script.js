@@ -78,8 +78,10 @@ displacement.canvas = document.createElement('canvas')
 displacement.canvas.width = 128
 displacement.canvas.height = 128
 displacement.canvas.style.position = 'fixed'
-displacement.canvas.style.width = '512px' 
-displacement.canvas.style.height = '512px'
+// displacement.canvas.style.width = '512px' 
+// displacement.canvas.style.height = '512px'
+displacement.canvas.style.width = '256px' 
+displacement.canvas.style.height = '256px'
 // Note: The height and width will change the size but not the actual amount of pixels of canvas, we are strecting the canvas so that we can see it properly, we are not increasing the pixels 
 displacement.canvas.style.top = 0
 displacement.canvas.style.left = 0
@@ -99,6 +101,31 @@ displacement.glowImage.src = './glow.png'
 // window.setTimeout(() => {
 //     displacement.context.drawImage(displacement.glowImage, 20, 20, 32, 32)
 // }, 1000)
+
+// Interactive plane 
+displacement.interactivePlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(10, 10),
+    new THREE.MeshBasicMaterial({ color: 'red' })
+    // new THREE.MeshBasicMaterial({ color: 'red' , wireframe: true})
+)
+scene.add(displacement.interactivePlane)
+
+// Raycaster
+displacement.raycaster = new THREE.Raycaster()
+
+// Coordinates
+// displacement.screenCursor = new THREE.Vector2()
+displacement.screenCursor = new THREE.Vector2(9999, 9999)
+
+window.addEventListener('pointermove', (event) => {
+    // console.log(event)
+    displacement.screenCursor.x = (event.clientX/ sizes.width) * 2 - 1
+    displacement.screenCursor.y = - (event.clientY/ sizes.height) * 2 + 1
+    // Explaination of maths: The event.clientX will give the value from 0 to ~1000(max screen resolution) and when we divide with sizes.width then the values will go from 0 to 1, and we want the values to go from -1 to +1 so we will multiply them by 2 and subtract it with 1 i.e. "0*2-1 = -1" & "1*2-1 = +1". It is same for the y-axis too but we will use - sign because in y-axis the values will go from -1 to +1 from top to bottom and we want it to go -1 to +1 from bottom to top.
+
+    // console.log(displacement.screenCursor.x)
+    // console.log(displacement.screenCursor.y)
+})
 
 /**
  * Particles
@@ -135,6 +162,20 @@ scene.add(particles)
 const tick = () => {
     // Update controls
     controls.update()
+
+    /**
+     * Raycaster
+     */
+    displacement.raycaster.setFromCamera(displacement.screenCursor, camera)
+    // Explain: It prepares a ray that starts from the camera and goes through the mouse position.
+    const intersections = displacement.raycaster.intersectObject(displacement.interactivePlane)
+    // console.log(intersections)
+
+    if(intersections.length) {
+        // console.log(intersections[0])
+        const uv = intersections[0].uv
+        console.log(uv)
+    }
 
     // Render
     renderer.render(scene, camera)
