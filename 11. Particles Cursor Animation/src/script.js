@@ -108,6 +108,7 @@ displacement.interactivePlane = new THREE.Mesh(
     new THREE.MeshBasicMaterial({ color: 'red' })
     // new THREE.MeshBasicMaterial({ color: 'red' , wireframe: true})
 )
+displacement.interactivePlane.visible = false
 scene.add(displacement.interactivePlane)
 
 // Raycaster
@@ -116,6 +117,9 @@ displacement.raycaster = new THREE.Raycaster()
 // Coordinates
 // displacement.screenCursor = new THREE.Vector2()
 displacement.screenCursor = new THREE.Vector2(9999, 9999)
+displacement.canvasCursor = new THREE.Vector2(9999, 9999)
+// displacement.canvasCursor = new THREE.Vector2()
+// Explain: As we know that the cursor will be set on the center, and the particles will float on default, so we set the screenCursor to 9999 and similarly we set the canvasCursor to 9999 becuase if we don't, the cursor will draw on the canvas without any hover on the plane/particles/image. The screenCursor is for the image/particles and the canvasCursor is for drawing in the canvas
 
 window.addEventListener('pointermove', (event) => {
     // console.log(event)
@@ -126,6 +130,9 @@ window.addEventListener('pointermove', (event) => {
     // console.log(displacement.screenCursor.x)
     // console.log(displacement.screenCursor.y)
 })
+
+// Texture 
+displacement.texture = new THREE.CanvasTexture(displacement.canvas)
 
 /**
  * Particles
@@ -138,7 +145,8 @@ const particlesMaterial = new THREE.ShaderMaterial({
     fragmentShader: particlesFragmentShader,
     uniforms: {
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
-        uPictureTexture: new THREE.Uniform(textureLoader.load('./picture-1.png'))
+        uPictureTexture: new THREE.Uniform(textureLoader.load('./picture-1.png')),
+        uDisplacementTexture: new THREE.Uniform(displacement.texture)
     }
 })
 const particles = new THREE.Points(particlesGeometry, particlesMaterial)
@@ -174,8 +182,61 @@ const tick = () => {
     if(intersections.length) {
         // console.log(intersections[0])
         const uv = intersections[0].uv
-        console.log(uv)
+        // console.log(uv)
+
+        displacement.canvasCursor.x = uv.x * displacement.canvas.width
+        // displacement.canvasCursor.y =  uv.y * displacement.canvas.height
+        displacement.canvasCursor.y =  (1 - uv.y) * displacement.canvas.height
+        // console.log(displacement.canvasCursor.x)
     }
+
+    /**
+     * Displacement
+     */
+    // Fade out 
+    displacement.context.globalCompositeOperation = 'source-over'
+    // displacement.context.globalAlpha = 0.1
+    displacement.context.globalAlpha = 0.02
+    displacement.context.fillRect(0, 0, displacement.canvas.width, displacement.canvas.height)
+
+    // Draw glow 
+    const glowSize = displacement.canvas.width * 0.25
+    displacement.context.globalCompositeOperation = 'lighten'
+    displacement.context.globalAlpha = 1
+    // displacement.context.drawImage(
+    //     displacement.glowImage,
+    //     displacement.canvasCursor.x,
+    //     displacement.canvasCursor.y,
+    //     32, 
+    //     32
+    // )
+    // displacement.context.drawImage(
+    //     displacement.glowImage,
+    //     displacement.canvasCursor.x,
+    //     displacement.canvasCursor.y,
+    //     glowSize,
+    //     glowSize
+    // )
+    displacement.context.drawImage(
+        displacement.glowImage,
+        displacement.canvasCursor.x - glowSize * 0.5,
+        displacement.canvasCursor.y - glowSize * 0.5,
+        glowSize,
+        glowSize
+    )
+    /* 
+        drawImage(
+            image object, 
+            position on the canvas (x-coordinate), 
+            position on the canvas (y-coordinate), 
+            size of the glow (height), 
+            size of the glow (width)
+        ) 
+    */
+
+    // Texture 
+    displacement.texture.needsUpdate = true 
+    // Explain: When the texture is modified i.e. the canvas, Three.js resends the texture to the GPU
 
     // Render
     renderer.render(scene, camera)
