@@ -4,9 +4,19 @@ uniform sampler2D uDisplacementTexture;
 
 varying vec3 vColor;
 
+attribute float aIntensity;
+
 void main() {
     // Displacement
     vec3 newPosition = position;
+    float displacementIntensity = texture(uDisplacementTexture, uv).r;
+
+    vec3 displacement = vec3(0.0, 0.0, 1.0);
+    displacement *= displacementIntensity;
+    displacement *= 3.0;
+    displacement *= aIntensity;
+
+    newPosition += displacement;
 
     // Final position
     // vec4 modelPosition = modelMatrix * vec4(position, 1.0);
@@ -28,4 +38,5 @@ void main() {
     // Varyings 
     // vColor = vec3(pictureIntensity);
     vColor = vec3(pow(pictureIntensity, 2.0));
+    // vColor = vec3(pow(aIntensity, 2.0));
 }

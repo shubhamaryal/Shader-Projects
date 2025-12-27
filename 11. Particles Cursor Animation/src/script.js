@@ -140,6 +140,15 @@ displacement.texture = new THREE.CanvasTexture(displacement.canvas)
 // const particlesGeometry = new THREE.PlaneGeometry(10, 10, 32, 32)
 const particlesGeometry = new THREE.PlaneGeometry(10, 10, 128, 128)
 
+const intensitiesArray = new Float32Array(particlesGeometry.attributes.position.count)
+// console.log(particlesGeometry.attributes.position.count)
+
+for(let i = 0; i < particlesGeometry.attributes.position.count; i++) {
+    intensitiesArray[i] = Math.random()
+}
+
+particlesGeometry.setAttribute('aIntensity', new THREE.BufferAttribute(intensitiesArray, 1))
+
 const particlesMaterial = new THREE.ShaderMaterial({
     vertexShader: particlesVertexShader,
     fragmentShader: particlesFragmentShader,
