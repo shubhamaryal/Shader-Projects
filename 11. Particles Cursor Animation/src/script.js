@@ -105,7 +105,8 @@ displacement.glowImage.src = './glow.png'
 // Interactive plane 
 displacement.interactivePlane = new THREE.Mesh(
     new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshBasicMaterial({ color: 'red' })
+    // new THREE.MeshBasicMaterial({ color: 'red' })
+    new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide})
     // new THREE.MeshBasicMaterial({ color: 'red' , wireframe: true})
 )
 displacement.interactivePlane.visible = false
@@ -120,6 +121,7 @@ displacement.screenCursor = new THREE.Vector2(9999, 9999)
 displacement.canvasCursor = new THREE.Vector2(9999, 9999)
 // displacement.canvasCursor = new THREE.Vector2()
 // Explain: As we know that the cursor will be set on the center, and the particles will float on default, so we set the screenCursor to 9999 and similarly we set the canvasCursor to 9999 becuase if we don't, the cursor will draw on the canvas without any hover on the plane/particles/image. The screenCursor is for the image/particles and the canvasCursor is for drawing in the canvas
+displacement.canvasCursorPrevious = new THREE.Vector2(9999, 9999)
 
 window.addEventListener('pointermove', (event) => {
     // console.log(event)
@@ -139,15 +141,21 @@ displacement.texture = new THREE.CanvasTexture(displacement.canvas)
  */
 // const particlesGeometry = new THREE.PlaneGeometry(10, 10, 32, 32)
 const particlesGeometry = new THREE.PlaneGeometry(10, 10, 128, 128)
+particlesGeometry.setIndex(null)
+particlesGeometry.deleteAttribute('normal')
 
 const intensitiesArray = new Float32Array(particlesGeometry.attributes.position.count)
+const anglesArray = new Float32Array(particlesGeometry.attributes.position.count)
 // console.log(particlesGeometry.attributes.position.count)
 
 for(let i = 0; i < particlesGeometry.attributes.position.count; i++) {
     intensitiesArray[i] = Math.random()
+    // anglesArray[i] = Math.random()
+    anglesArray[i] = Math.random() * Math.PI * 2
 }
 
 particlesGeometry.setAttribute('aIntensity', new THREE.BufferAttribute(intensitiesArray, 1))
+particlesGeometry.setAttribute('aAngle', new THREE.BufferAttribute(anglesArray, 1))
 
 const particlesMaterial = new THREE.ShaderMaterial({
     vertexShader: particlesVertexShader,
@@ -156,7 +164,8 @@ const particlesMaterial = new THREE.ShaderMaterial({
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
         uPictureTexture: new THREE.Uniform(textureLoader.load('./picture-1.png')),
         uDisplacementTexture: new THREE.Uniform(displacement.texture)
-    }
+    },
+    // blending: THREE.AdditiveBlending
 })
 const particles = new THREE.Points(particlesGeometry, particlesMaterial)
 scene.add(particles)
@@ -208,10 +217,18 @@ const tick = () => {
     displacement.context.globalAlpha = 0.02
     displacement.context.fillRect(0, 0, displacement.canvas.width, displacement.canvas.height)
 
+    // Speed alpha
+    const cursorDistance = displacement.canvasCursorPrevious.distanceTo(displacement.canvasCursor)
+    displacement.canvasCursorPrevious.copy(displacement.canvasCursor)
+    // console.log(cursorDistance)
+    // const alpha = cursorDistance * 0.1
+    const alpha = Math.min(cursorDistance * 0.1, 1)
+
     // Draw glow 
     const glowSize = displacement.canvas.width * 0.25
     displacement.context.globalCompositeOperation = 'lighten'
-    displacement.context.globalAlpha = 1
+    // displacement.context.globalAlpha = 1
+    displacement.context.globalAlpha = alpha
     // displacement.context.drawImage(
     //     displacement.glowImage,
     //     displacement.canvasCursor.x,
