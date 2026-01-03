@@ -111,7 +111,8 @@ renderer.setClearColor(debugObject.clearColor)
 let particles = null
 
 gltfLoader.load('./models.glb', (gltf) => {
-    // console.log(gltf)
+    // console.log(gltf) 
+    // Explaination: The models are inside one file and all the models are available inside the scene as children
     // const particles = {}
     particles = {}
 
@@ -123,8 +124,11 @@ gltfLoader.load('./models.glb', (gltf) => {
     //     return child.geometry.attributes.position
     // })
     // console.log(positions)
+
+    // EXPLAINATION: The models are inside the gltf>scene>children so we will directly map through it and for the position, the position is inside children>geometry>attributes>position. We can get count and the array for position inside it.
     const positions = gltf.scene.children.map(child => child.geometry.attributes.position)
-    // console.log(positions)
+    console.log(positions)
+
     particles.maxCount = 0 
     for(const position of positions) {
         if(position.count > particles.maxCount)
@@ -135,7 +139,7 @@ gltfLoader.load('./models.glb', (gltf) => {
     particles.positions = []
     for(const position of positions) {
         // console.log(position)
-        const originalArray = position.array
+        const originalArray = position.array // This array is has the vertices position as Float32Array
         // console.log(originalArray)
         const newArray = new Float32Array(particles.maxCount * 3)
 
@@ -158,6 +162,7 @@ gltfLoader.load('./models.glb', (gltf) => {
                 newArray[i3 + 2] = originalArray[randomIndex + 2]
             }
         }
+        
 
         particles.positions.push(new THREE.Float32BufferAttribute(newArray, 3))
     }
