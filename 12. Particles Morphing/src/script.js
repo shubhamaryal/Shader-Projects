@@ -127,7 +127,7 @@ gltfLoader.load('./models.glb', (gltf) => {
 
     // EXPLAINATION: The models are inside the gltf>scene>children so we will directly map through it and for the position, the position is inside children>geometry>attributes>position. We can get count and the array for position inside it.
     const positions = gltf.scene.children.map(child => child.geometry.attributes.position)
-    console.log(positions)
+    // console.log(positions)
 
     particles.maxCount = 0 
     for(const position of positions) {
@@ -173,6 +173,7 @@ gltfLoader.load('./models.glb', (gltf) => {
     // particles.geometry = new THREE.SphereGeometry(3)
     particles.geometry = new THREE.BufferGeometry()
     particles.geometry.setAttribute('position', particles.positions[1])
+    particles.geometry.setAttribute('aPositionTarget', particles.positions[3])
     // particles.geometry.setIndex(null)
 
     // Material
@@ -182,7 +183,8 @@ gltfLoader.load('./models.glb', (gltf) => {
         uniforms: {
             // uSize: new THREE.Uniform(0.4),
             uSize: new THREE.Uniform(0.2),
-            uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio))
+            uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
+            uProgress: new THREE.Uniform(0)
         },
         blending: THREE.AdditiveBlending,
         depthWrite: false
@@ -191,6 +193,14 @@ gltfLoader.load('./models.glb', (gltf) => {
     // Points
     particles.points = new THREE.Points(particles.geometry, particles.material)
     scene.add(particles.points)
+
+    // Tweaks 
+    gui
+        .add(particles.material.uniforms.uProgress, 'value')
+        .min(0)
+        .max(1)
+        .step(0.001)
+        .name('uProgress')
 })
 
 /**
