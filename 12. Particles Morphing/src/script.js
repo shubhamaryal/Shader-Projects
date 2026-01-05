@@ -115,6 +115,7 @@ gltfLoader.load('./models.glb', (gltf) => {
     // Explaination: The models are inside one file and all the models are available inside the scene as children
     // const particles = {}
     particles = {}
+    particles.index = 0
 
     // Position 
     // gltf.scene.children.map((child) => {
@@ -170,19 +171,27 @@ gltfLoader.load('./models.glb', (gltf) => {
     // console.log(particles.positions)
 
     // Geometry
+    const sizesArray = new Float32Array(particles.maxCount)
+
+    for(let i = 0; i < particles.maxCount; i++)
+        sizesArray[i] = Math.random()
+    
+    // console.log(sizesArray)
+
     // particles.geometry = new THREE.SphereGeometry(3)
     particles.geometry = new THREE.BufferGeometry()
-    particles.geometry.setAttribute('position', particles.positions[1])
+    particles.geometry.setAttribute('position', particles.positions[particles.index])
     particles.geometry.setAttribute('aPositionTarget', particles.positions[3])
     // particles.geometry.setIndex(null)
+    particles.geometry.setAttribute('aSize', new THREE.BufferAttribute(sizesArray, 1))
 
     // Material
     particles.material = new THREE.ShaderMaterial({
         vertexShader: particlesVertexShader,
         fragmentShader: particlesFragmentShader,
         uniforms: {
-            // uSize: new THREE.Uniform(0.4),
-            uSize: new THREE.Uniform(0.2),
+            uSize: new THREE.Uniform(0.4),
+            // uSize: new THREE.Uniform(0.2),
             uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
             uProgress: new THREE.Uniform(0)
         },
@@ -194,6 +203,33 @@ gltfLoader.load('./models.glb', (gltf) => {
     particles.points = new THREE.Points(particles.geometry, particles.material)
     scene.add(particles.points)
 
+    // Methods
+    // particles.morph = () => {
+    particles.morph = (index) => {
+        // Update attributes
+        particles.geometry.attributes.position = particles.positions[particles.index]
+        particles.geometry.attributes.aPositionTarget = particles.positions[index]
+
+        // Animate uProgress
+        gsap.fromTo(
+            particles.material.uniforms.uProgress,
+            { value: 0 }, 
+            { 
+                value: 1 , 
+                duration: 3, 
+                ease: 'linear'
+            }
+        )
+
+        // Save index
+        particles.index = index
+    }
+
+    particles.morph0 = () => { particles.morph(0) }
+    particles.morph1 = () => { particles.morph(1) }
+    particles.morph2 = () => { particles.morph(2) }
+    particles.morph3 = () => { particles.morph(3) }
+
     // Tweaks 
     gui
         .add(particles.material.uniforms.uProgress, 'value')
@@ -201,6 +237,12 @@ gltfLoader.load('./models.glb', (gltf) => {
         .max(1)
         .step(0.001)
         .name('uProgress')
+        .listen()
+
+    gui.add(particles, 'morph0')
+    gui.add(particles, 'morph1')
+    gui.add(particles, 'morph2')
+    gui.add(particles, 'morph3')
 })
 
 /**
