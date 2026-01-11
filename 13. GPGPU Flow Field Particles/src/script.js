@@ -6,6 +6,7 @@ import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer
 import GUI from 'lil-gui'
 import particlesVertexShader from './shaders/particles/vertex.glsl'
 import particlesFragmentShader from './shaders/particles/fragment.glsl'
+import gpgpuPaticlesShader from './shaders/gpgpu/particles.glsl'
 // console.log(GPUComputationRenderer)
 
 /**
@@ -96,6 +97,17 @@ baseGeometry.count = baseGeometry.instance.attributes.position.count
 const gpgpu = {}
 gpgpu.size = Math.ceil(Math.sqrt(baseGeometry.count))
 gpgpu.computation = new GPUComputationRenderer(gpgpu.size, gpgpu.size, renderer)
+
+// Base particles
+const baseParticlesTexture = gpgpu.computation.createTexture()
+// console.log(baseParticlesTexture)
+// console.log(baseParticlesTexture.image)
+// console.log(baseParticlesTexture.image.data)
+
+// Particles variable
+gpgpu.particlesVariable = gpgpu.computation.addVariable('uParticles', gpgpuPaticlesShader, baseParticlesTexture)
+// Syntax: addVariable(name, shader, base_texture)
+gpgpu.computation.setVariableDependencies(gpgpu.particlesVariable, [ gpgpu.particlesVariable ])
 
 /**
  * Particles
