@@ -38,8 +38,7 @@ const sizes = {
     pixelRatio: Math.min(window.devicePixelRatio, 2)
 }
 
-window.addEventListener('resize', () =>
-{
+window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
@@ -144,22 +143,28 @@ scene.add(gpgpu.debug)
 const particles = {}
 
 // Geometry
+const particlesUvArray = new Float32Array(baseGeometry.count * 2)
+
 // particles.geometry = new THREE.SphereGeometry(3)
+particles.geometry = new THREE.BufferGeometry()
+particles.geometry.setDrawRange(0, baseGeometry.count)
+// Explaination: We ask Three.js to draw from 0 to baseGeometry.count, we can choose a beginning range but for almost all the projects we will use 0 as initial value
 
 // Material
 particles.material = new THREE.ShaderMaterial({
     vertexShader: particlesVertexShader,
     fragmentShader: particlesFragmentShader,
-    uniforms:
-    {
+    uniforms: {
         uSize: new THREE.Uniform(0.4),
-        uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio))
+        uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
+        uParticlesTexture: new THREE.Uniform()
     }
 })
 
 // Points
 // particles.points = new THREE.Points(particles.geometry, particles.material)
-particles.points = new THREE.Points(baseGeometry.instance, particles.material)
+// particles.points = new THREE.Points(baseGeometry.instance, particles.material)
+particles.points = new THREE.Points(particles.geometry, particles.material)
 scene.add(particles.points)
 
 /**
@@ -174,8 +179,7 @@ gui.add(particles.material.uniforms.uSize, 'value').min(0).max(1).step(0.001).na
 const clock = new THREE.Clock()
 let previousTime = 0
 
-const tick = () =>
-{
+const tick = () => {
     const elapsedTime = clock.getElapsedTime()
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
@@ -185,6 +189,7 @@ const tick = () =>
 
     // GPGPU update
     gpgpu.computation.compute()
+    particles.material.uniforms.uParticlesTexture.value = gpgpu.computation.getCurrentRenderTarget(gpgpu.particlesVariable).texture
 
     // Render normal scene
     renderer.render(scene, camera)
