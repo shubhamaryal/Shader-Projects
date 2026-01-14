@@ -82,6 +82,12 @@ debugObject.clearColor = '#29191f'
 renderer.setClearColor(debugObject.clearColor)
 
 /**
+ * Load models
+ */
+const gltf = await gltfLoader.loadAsync('./model.glb')
+console.log(gltf)
+
+/**
  * Base geometry
  */
 const baseGeometry = {}
@@ -145,10 +151,30 @@ const particles = {}
 // Geometry
 const particlesUvArray = new Float32Array(baseGeometry.count * 2)
 
+for(let y = 0; y < gpgpu.size; y++) {
+    for(let x = 0; x < gpgpu.size; x++) {
+        const i = (y * gpgpu.size) + x
+        // console.log(i)
+        const i2 = i * 2
+
+        // const uvX = x / gpgpu.size
+        // const uvY = y / gpgpu.size
+        // console.log(uvX)
+        const uvX = (x + 0.5) / gpgpu.size
+        const uvY = (y + 0.5) / gpgpu.size
+
+        particlesUvArray[i2 + 0] = uvX;
+        particlesUvArray[i2 + 1] = uvY;
+    }
+}
+
+// console.log(particlesUvArray)
+
 // particles.geometry = new THREE.SphereGeometry(3)
 particles.geometry = new THREE.BufferGeometry()
 particles.geometry.setDrawRange(0, baseGeometry.count)
 // Explaination: We ask Three.js to draw from 0 to baseGeometry.count, we can choose a beginning range but for almost all the projects we will use 0 as initial value
+particles.geometry.setAttribute('aParticlesUv', new THREE.BufferAttribute(particlesUvArray, 2))
 
 // Material
 particles.material = new THREE.ShaderMaterial({
