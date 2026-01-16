@@ -85,15 +85,17 @@ renderer.setClearColor(debugObject.clearColor)
  * Load models
  */
 const gltf = await gltfLoader.loadAsync('./model.glb')
-console.log(gltf)
+// console.log(gltf)
 
 /**
  * Base geometry
  */
 const baseGeometry = {}
-baseGeometry.instance = new THREE.SphereGeometry(3)
+// baseGeometry.instance = new THREE.SphereGeometry(3)
+baseGeometry.instance = gltf.scene.children[0].geometry
 baseGeometry.count = baseGeometry.instance.attributes.position.count
 // console.log(baseGeometry.instance)
+// console.log(baseGeometry.instance.attributes.color)
 
 /**
  * GPU Compute
@@ -150,21 +152,26 @@ const particles = {}
 
 // Geometry
 const particlesUvArray = new Float32Array(baseGeometry.count * 2)
+const sizesArray = new Float32Array(baseGeometry.count)
 
 for(let y = 0; y < gpgpu.size; y++) {
     for(let x = 0; x < gpgpu.size; x++) {
         const i = (y * gpgpu.size) + x
         // console.log(i)
         const i2 = i * 2
-
+        
         // const uvX = x / gpgpu.size
         // const uvY = y / gpgpu.size
         // console.log(uvX)
         const uvX = (x + 0.5) / gpgpu.size
         const uvY = (y + 0.5) / gpgpu.size
 
+        // Particles UV
         particlesUvArray[i2 + 0] = uvX;
         particlesUvArray[i2 + 1] = uvY;
+
+        // Size
+        sizesArray[i] = Math.random()
     }
 }
 
@@ -175,13 +182,16 @@ particles.geometry = new THREE.BufferGeometry()
 particles.geometry.setDrawRange(0, baseGeometry.count)
 // Explaination: We ask Three.js to draw from 0 to baseGeometry.count, we can choose a beginning range but for almost all the projects we will use 0 as initial value
 particles.geometry.setAttribute('aParticlesUv', new THREE.BufferAttribute(particlesUvArray, 2))
+particles.geometry.setAttribute('aColor', baseGeometry.instance.attributes.color)
+particles.geometry.setAttribute('aSize', new THREE.BufferAttribute(sizesArray, 1))
 
 // Material
 particles.material = new THREE.ShaderMaterial({
     vertexShader: particlesVertexShader,
     fragmentShader: particlesFragmentShader,
     uniforms: {
-        uSize: new THREE.Uniform(0.4),
+        // uSize: new THREE.Uniform(0.4),
+        uSize: new THREE.Uniform(0.07),
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
         uParticlesTexture: new THREE.Uniform()
     }

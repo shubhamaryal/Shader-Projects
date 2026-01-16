@@ -6,7 +6,7 @@ void main() {
     // gl_FragColor = vec4(gl_FragCoord.xy / resolution.xy , 1.0, 1.0);
     // gl_FragColor = vec4(uv , 1.0, 1.0);
     // particle.y += 0.01;
-    particle.x += 0.01;
+    // particle.x += 0.01;
     // particle.x *= 1.01;
     gl_FragColor = particle;
 }
