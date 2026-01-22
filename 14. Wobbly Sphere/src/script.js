@@ -76,6 +76,7 @@ gui.addColor(material, 'color')
 
 // Geometry
 const geometry = new THREE.IcosahedronGeometry(2.5, 50)
+console.log(geometry.attributes)
 
 // Mesh
 const wobble = new THREE.Mesh(geometry, material)
