@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import GUI from 'lil-gui'
 import wobbleVertexShader from './shaders/wobble/vertex.glsl'
@@ -11,6 +12,7 @@ import wobbleFragmentShader from './shaders/wobble/fragment.glsl'
 // console.log(CustomShaderMaterial)
 // console.log(wobbleFragmentShader)
 // console.log(wobbleVertexShader)
+// console.log(mergeVertices)
 
 /**
  * Base
@@ -53,8 +55,8 @@ const material = new CustomShaderMaterial({
     baseMaterial: THREE.MeshPhysicalMaterial,
     vertexShader: wobbleVertexShader,
     fragmentShader: wobbleFragmentShader,
-    silent: true,
-
+    // silent: true,
+    
     // MeshPhysicalMaterial
     metalness: 0,
     roughness: 0.5,
@@ -66,6 +68,26 @@ const material = new CustomShaderMaterial({
     wireframe: false
 })
 
+const depthMaterial = new CustomShaderMaterial({
+    // CSM
+    // baseMaterial: THREE.MeshPhysicalMaterial,
+    baseMaterial: THREE.MeshDepthMaterial,
+    vertexShader: wobbleVertexShader,
+    // fragmentShader: wobbleFragmentShader,
+
+    // // MeshPhysicalMaterial
+    // metalness: 0,
+    // roughness: 0.5,
+    // color: '#ffffff',
+    // transmission: 0,
+    // ior: 1.5,
+    // thickness: 1.5,
+    // transparent: true,
+    // wireframe: false
+    // MeshDepthMaterial 
+    depthPacking: THREE.RGBADepthPacking
+})
+
 // Tweaks
 gui.add(material, 'metalness', 0, 1, 0.001)
 gui.add(material, 'roughness', 0, 1, 0.001)
@@ -75,11 +97,16 @@ gui.add(material, 'thickness', 0, 10, 0.001)
 gui.addColor(material, 'color')
 
 // Geometry
-const geometry = new THREE.IcosahedronGeometry(2.5, 50)
-console.log(geometry.attributes)
+// const geometry = new THREE.IcosahedronGeometry(2.5, 50)
+let geometry = new THREE.IcosahedronGeometry(2.5, 50)
+geometry = mergeVertices(geometry)
+geometry.computeTangents()
+// console.log(geometry.attributes)
 
 // Mesh
 const wobble = new THREE.Mesh(geometry, material)
+// const wobble = new THREE.Mesh(geometry, depthMaterial)
+wobble.customDepthMaterial = depthMaterial
 wobble.receiveShadow = true
 wobble.castShadow = true
 scene.add(wobble)
