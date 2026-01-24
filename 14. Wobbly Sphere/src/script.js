@@ -48,6 +48,24 @@ rgbeLoader.load('./urban_alley_01_1k.hdr', (environmentMap) =>
 /**
  * Wobble
  */
+debugObject.colorA = '#0000ff'
+debugObject.colorB = '#ff0000'
+
+const uniforms = {
+    uTime: new THREE.Uniform(0),
+
+    uPositionFrequency: new THREE.Uniform(0.5),
+    uTimeFrequency: new THREE.Uniform(0.4),
+    uStrength: new THREE.Uniform(0.3),
+
+    uWarpPositionFrequency: new THREE.Uniform(0.38),
+    uWarpTimeFrequency: new THREE.Uniform(0.12),
+    uWarpStrength: new THREE.Uniform(1.7),
+
+    uColorA: new THREE.Uniform(new THREE.Color(debugObject.colorA)),
+    uColorB: new THREE.Uniform(new THREE.Color(debugObject.colorB))
+}
+
 // Material
 // const material = new THREE.MeshPhysicalMaterial({
 const material = new CustomShaderMaterial({
@@ -55,6 +73,7 @@ const material = new CustomShaderMaterial({
     baseMaterial: THREE.MeshPhysicalMaterial,
     vertexShader: wobbleVertexShader,
     fragmentShader: wobbleFragmentShader,
+    uniforms: uniforms,
     // silent: true,
     
     // MeshPhysicalMaterial
@@ -74,6 +93,7 @@ const depthMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshDepthMaterial,
     vertexShader: wobbleVertexShader,
     // fragmentShader: wobbleFragmentShader,
+    uniforms: uniforms,
 
     // // MeshPhysicalMaterial
     // metalness: 0,
@@ -89,27 +109,61 @@ const depthMaterial = new CustomShaderMaterial({
 })
 
 // Tweaks
+gui.close()
+
+gui.add(uniforms.uPositionFrequency, 'value', 0, 2, 0.001).name('uPositionFrequency')
+gui.add(uniforms.uTimeFrequency, 'value', 0, 2, 0.001).name('uTimeFrequency')
+gui.add(uniforms.uStrength, 'value', 0, 2, 0.001).name('uStrength')
+
+gui.add(uniforms.uWarpPositionFrequency, 'value', 0, 2, 0.001).name('uWarpPositionFrequency')
+gui.add(uniforms.uWarpTimeFrequency, 'value', 0, 2, 0.001).name('uWarpTimeFrequency')
+gui.add(uniforms.uWarpStrength, 'value', 0, 2, 0.001).name('uWarpStrength')
+
+gui
+    .addColor(debugObject, 'colorA')
+    .onChange(() => {
+    uniforms.uColorA.value.set(debugObject.colorA)
+    })
+gui
+    .addColor(debugObject, 'colorB')
+    .onChange(() => {
+    uniforms.uColorB.value.set(debugObject.colorB)
+    })
+
 gui.add(material, 'metalness', 0, 1, 0.001)
 gui.add(material, 'roughness', 0, 1, 0.001)
 gui.add(material, 'transmission', 0, 1, 0.001)
 gui.add(material, 'ior', 0, 10, 0.001)
 gui.add(material, 'thickness', 0, 10, 0.001)
-gui.addColor(material, 'color')
+// gui.addColor(material, 'color')
 
-// Geometry
-// const geometry = new THREE.IcosahedronGeometry(2.5, 50)
-let geometry = new THREE.IcosahedronGeometry(2.5, 50)
-geometry = mergeVertices(geometry)
-geometry.computeTangents()
-// console.log(geometry.attributes)
 
-// Mesh
-const wobble = new THREE.Mesh(geometry, material)
-// const wobble = new THREE.Mesh(geometry, depthMaterial)
-wobble.customDepthMaterial = depthMaterial
-wobble.receiveShadow = true
-wobble.castShadow = true
-scene.add(wobble)
+// // Geometry
+// // const geometry = new THREE.IcosahedronGeometry(2.5, 50)
+// let geometry = new THREE.IcosahedronGeometry(2.5, 50)
+// geometry = mergeVertices(geometry)
+// geometry.computeTangents()
+// // console.log(geometry.attributes)
+
+// // Mesh
+// const wobble = new THREE.Mesh(geometry, material)
+// // const wobble = new THREE.Mesh(geometry, depthMaterial)
+// wobble.customDepthMaterial = depthMaterial
+// wobble.receiveShadow = true
+// wobble.castShadow = true
+// scene.add(wobble)
+
+// Model 
+gltfLoader.load('./suzanne.glb', (gltf) => {
+    // console.log(gltf)
+    const wobble = gltf.scene.children[0]
+    wobble.receiveShadow = true
+    wobble.castShadow = true
+    wobble.material = material
+    wobble.customDepthMaterial = depthMaterial
+
+    scene.add(wobble)
+})
 
 /**
  * Plane
@@ -191,9 +245,11 @@ renderer.setPixelRatio(sizes.pixelRatio)
  */
 const clock = new THREE.Clock()
 
-const tick = () =>
-{
+const tick = () => {
     const elapsedTime = clock.getElapsedTime()
+
+    // Materials
+    uniforms.uTime.value = elapsedTime
 
     // Update controls
     controls.update()

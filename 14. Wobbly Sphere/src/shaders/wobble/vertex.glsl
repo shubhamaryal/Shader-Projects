@@ -8,18 +8,41 @@
 //     vUv = uv;
 // }
 
+uniform float uTime;
+uniform float uPositionFrequency;
+uniform float uTimeFrequency;
+uniform float uStrength;
+uniform float uWarpPositionFrequency;
+uniform float uWarpTimeFrequency;
+uniform float uWarpStrength;
+
 attribute vec4 tangent;
+
+varying float vWobble;
 
 #include ../includes/simplexNoise4d.glsl
 
 // float getWobble() {
 float getWobble(vec3 position) {
+    vec3 warpedPosition = position;
+    warpedPosition += simplexNoise4d(vec4(
+        // position,
+        position * uWarpPositionFrequency,
+        // uTime
+        uTime * uWarpTimeFrequency
+    // ));
+    )) * uWarpStrength;
+
     // float wobble = simplexNoise4d(vec4(
     return simplexNoise4d(vec4(
         // csm_Position , // XYZ
-        position , // XYZ
-        0.0        // W
-    ));
+        // position , // XYZ
+        // position * uPositionFrequency , // XYZ
+        warpedPosition * uPositionFrequency , // XYZ
+        // 0.0        // W
+        uTime * uTimeFrequency        // W
+    // ));
+    )) * uStrength;
 }
 
 void main() {
@@ -44,4 +67,8 @@ void main() {
     vec3 toA = normalize(positionA - csm_Position);
     vec3 toB = normalize(positionB - csm_Position);
     csm_Normal = cross(toA, toB);
+
+    // Varyings
+    // vWobble = wobble;
+    vWobble = wobble / uStrength;
 }
