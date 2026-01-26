@@ -3,7 +3,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import GUI from 'lil-gui'
+import slicedVertexShader from './shaders/sliced/vertex.glsl'
+import slicedFragmentShader from './shaders/sliced/fragment.glsl'
+
+// console.log(CustomShaderMaterial)
+// console.log(slicedVertexShader)
+// console.log(slicedFragmentShader)
 
 /**
  * Base
@@ -51,6 +58,20 @@ const material = new THREE.MeshStandardMaterial({
     color: '#858080'
 })
 
+// const material = new THREE.MeshStandardMaterial({
+const slicedMaterial = new CustomShaderMaterial({
+    // CSM
+    baseMaterial: THREE.MeshStandardMaterial,
+    vertexShader: slicedVertexShader,
+    fragmentShader: slicedFragmentShader,
+
+    // MeshStandardMaterial
+    metalness: 0.5,
+    roughness: 0.25,
+    envMapIntensity: 0.5,
+    color: '#858080'
+})
+
 // // Mesh
 // const mesh = new THREE.Mesh(geometry, material)
 // scene.add(mesh)
@@ -60,6 +81,21 @@ let model = null;
 gltfLoader.load('./gears.glb', (gltf) => {
     // scene.add(gltf.scene)
     model = gltf.scene
+
+    model.traverse((child) => {
+        // console.log(child)
+        // We used isMesh because there can be camera and other things too
+        if(child.isMesh) { 
+            if(child.name == 'outerHull') {
+                child.material = slicedMaterial
+            } else {
+                child.material = material
+            }
+            child.castShadow = true
+            child.receiveShadow = true
+        }
+    })
+
     scene.add(model)
 })
 
@@ -149,9 +185,12 @@ renderer.setPixelRatio(sizes.pixelRatio)
  */
 const clock = new THREE.Clock()
 
-const tick = () =>
-{
+const tick = () => {
     const elapsedTime = clock.getElapsedTime()
+
+    // Update model 
+    if(model)
+        model.rotation.y = elapsedTime * 0.1;
 
     // Update controls
     controls.update()
