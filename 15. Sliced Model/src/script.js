@@ -55,6 +55,19 @@ const uniforms = {
 gui.add(uniforms.uSliceStart, 'value', - Math.PI, Math.PI, 0.001).name('uSliceStart')
 gui.add(uniforms.uSliceArc, 'value', 0, Math.PI * 2, 0.001).name('uSliceArc')
 
+const patchMap = {
+    csm_Slice: {
+        // '#include <colorspace_fragment>' : '#include <colorspace_fragment>'
+        '#include <colorspace_fragment>' : 
+        `
+            #include <colorspace_fragment>
+
+            if(!gl_FrontFacing)
+                gl_FragColor = vec4(0.75, 0.15, 0.3, 1.0);
+        ` 
+    }
+}
+
 // // Geometry
 // const geometry = new THREE.IcosahedronGeometry(2.5, 5)
 
@@ -73,12 +86,33 @@ const slicedMaterial = new CustomShaderMaterial({
     vertexShader: slicedVertexShader,
     fragmentShader: slicedFragmentShader,
     uniforms: uniforms,
+    patchMap: patchMap,
 
     // MeshStandardMaterial
     metalness: 0.5,
     roughness: 0.25,
     envMapIntensity: 0.5,
-    color: '#858080'
+    color: '#858080',
+    side: THREE.DoubleSide
+})
+
+const slicedDepthMaterial = new CustomShaderMaterial({
+    // CSM
+    baseMaterial: THREE.MeshDepthMaterial,
+    vertexShader: slicedVertexShader,
+    fragmentShader: slicedFragmentShader,
+    uniforms: uniforms,
+    patchMap: patchMap,
+
+    // MeshStandardMaterial
+    // metalness: 0.5,
+    // roughness: 0.25,
+    // envMapIntensity: 0.5,
+    // color: '#858080',
+    // side: THREE.DoubleSide
+
+    // MeshDepthMaterial
+    depthPacking: THREE.RGBADepthPacking
 })
 
 // // Mesh
@@ -97,6 +131,7 @@ gltfLoader.load('./gears.glb', (gltf) => {
         if(child.isMesh) { 
             if(child.name == 'outerHull') {
                 child.material = slicedMaterial
+                child.customDepthMaterial = slicedDepthMaterial
             } else {
                 child.material = material
             }
@@ -111,16 +146,16 @@ gltfLoader.load('./gears.glb', (gltf) => {
 /**
  * Plane
  */
-const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10, 10),
-    new THREE.MeshStandardMaterial({ color: '#aaaaaa' })
-)
-plane.receiveShadow = true
-plane.position.x = - 4
-plane.position.y = - 3
-plane.position.z = - 4
-plane.lookAt(new THREE.Vector3(0, 0, 0))
-scene.add(plane)
+// const plane = new THREE.Mesh(
+//     new THREE.PlaneGeometry(10, 10, 10),
+//     new THREE.MeshStandardMaterial({ color: '#aaaaaa' })
+// )
+// plane.receiveShadow = true
+// plane.position.x = - 4
+// plane.position.y = - 3
+// plane.position.z = - 4
+// plane.lookAt(new THREE.Vector3(0, 0, 0))
+// scene.add(plane)
 
 /**
  * Lights
@@ -198,8 +233,8 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
     // Update model 
-    if(model)
-        model.rotation.y = elapsedTime * 0.1;
+    // if(model)
+    //     model.rotation.y = elapsedTime * 0.1;
 
     // Update controls
     controls.update()
